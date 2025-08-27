@@ -5,6 +5,8 @@ from rest_framework import status
 from UserManagement.models import User
 from UserManagement.serializers import UserSerializer
 from rest_framework.decorators import action
+from django.contrib.auth import authenticate
+from rest_framework.authtoken.models import Token
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -19,8 +21,22 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @action(detail=False, methods=['post'], url_path='login')
     def login(self,request):
-        pass
+        username = request.data.get('username')
+        password = request.data.get('password')
+        user = authenticate(username=username, password=password)
+        if user is None:
+            return Response(
+                {'Error': 'Invalid Credentials'},
+                status.HTTP_400_BAD_REQUEST,
+            )
+
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({
+            'token' : token,
+            'User' : self.serializer_class(user).data
+        })
 
     def logout(self, request):
         pass
@@ -39,5 +55,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def updatePassword(self, request):
         pass
+
+    def forgetPassword(self, request):
 
 
