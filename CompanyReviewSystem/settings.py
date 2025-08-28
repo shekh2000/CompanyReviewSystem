@@ -11,16 +11,17 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-
+import environ
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+env = environ.Env()
+environ.Env.read_env()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-%s#@*k&l0$_vgsie^r)51!os^y3^nk&aezh+n_trtf_%kndd-s'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -85,11 +86,11 @@ WSGI_APPLICATION = 'CompanyReviewSystem.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'companyreview',   # the DB you created
-        'USER': 'deepaksingh',      # your Postgres role (probably your mac username unless you created another)
-        'PASSWORD': '',             # if you didn’t set one, leave blank
-        'HOST': 'localhost',        # since it's running locally
-        'PORT': '5432',             # default Postgres port
+        'NAME': env('DB_NAME'),
+        'USER': env('DB_USER'),
+        'PASSWORD': env('DB_PASSWORD'),
+        'HOST': env('DB_HOST'),
+        'PORT': env('DB_PORT'),
     }
 }
 
@@ -116,6 +117,12 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'UserManagement.validators.CustomPasswordValidator',
     }
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ]
+}
 
 AUTH_USER_MODEL = "UserManagement.User"
 # Internationalization
