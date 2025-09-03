@@ -1,6 +1,18 @@
+from django.contrib.auth.base_user import BaseUserManager
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
+
+class CustomUserManager(BaseUserManager):
+    def create_user(self, email, password, **extra_fields):
+        if email is None:
+            raise ValueError("Email can not be empty.")
+        user = self.normalize_email(email)
+        user = self.model(email=user, **extra_fields)
+        user.set_password(password)
+        user.save()
+        return user
 
 class User(AbstractUser):
     class RoleType(models.TextChoices):
@@ -9,6 +21,7 @@ class User(AbstractUser):
         ADMIN = "Admin", "Admin"
 
     username = None
+    objects = CustomUserManager()
     email = models.EmailField(unique=True)
     phone_number = PhoneNumberField(unique=True)
     dob = models.DateField(blank=True, null=True)

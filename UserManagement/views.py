@@ -6,7 +6,7 @@ from UserManagement.models import User
 from UserManagement.serializers import UserSerializer
 from rest_framework.decorators import action
 from django.contrib.auth import authenticate
-from rest_framework.authtoken.models import Token
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -25,6 +25,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def login(self,request):
         username = request.data.get('username')
         password = request.data.get('password')
+        print(username, password)
         user = authenticate(username=username, password=password)
         if user is None:
             return Response(
@@ -32,9 +33,11 @@ class UserViewSet(viewsets.ModelViewSet):
                 status.HTTP_400_BAD_REQUEST,
             )
 
-        token, created = Token.objects.get_or_create(user=user)
+        refresh = RefreshToken.for_user(user)
+        access = refresh.access_token
         return Response({
-            'token' : token,
+            'RefreshToken': str(refresh),
+            'AccessToken': str(access),
             'User' : self.serializer_class(user).data
         })
 
@@ -57,5 +60,5 @@ class UserViewSet(viewsets.ModelViewSet):
         pass
 
     def forgetPassword(self, request):
-
+        pass
 
