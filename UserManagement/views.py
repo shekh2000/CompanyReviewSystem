@@ -1,3 +1,5 @@
+from tokenize import TokenError
+
 from django.contrib.admin import action
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -7,6 +9,7 @@ from UserManagement.serializers import UserSerializer
 from rest_framework.decorators import action
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
+
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -41,8 +44,18 @@ class UserViewSet(viewsets.ModelViewSet):
             'User' : self.serializer_class(user).data
         })
 
+    @action(detail=False, methods=['post'], url_path='logout')
     def logout(self, request):
-        pass
+        try:
+            refresh = request.data['RefreshToken']
+            token = RefreshToken(refresh)
+            token.blacklist()
+            return Response("Logged out", status = status.HTTP_200_OK)
+
+        except KeyError:
+            return Response("Token is needed", status=status.HTTP_400_BAD_REQUEST)
+        except TokenError:
+            return Response("Invalid Token", status=status.HTTP_400_BAD_REQUEST)
 
     def getUser(self, request):
         pass
